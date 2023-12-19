@@ -4,3 +4,4 @@ uvicorn
 sentence_transformers
 pydub
 openai-whisper
+m3u8
