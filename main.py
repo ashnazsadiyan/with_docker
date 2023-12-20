@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Response
 from mangum import Mangum
 import uvicorn
-# import ssl
+import ssl
 import subprocess
 from typing import List  # Import List type for questions
 from pydantic import BaseModel
@@ -10,8 +10,6 @@ from sentence_transformers import SentenceTransformer, util
 from datetime import datetime
 from pydub import AudioSegment
 import os
-import m3u8
-import requests
 
 # import os
 
@@ -19,7 +17,7 @@ import requests
 app = FastAPI()
 handler = Mangum(app)
 
-# ssl._create_default_https_context = ssl._create_unverified_context
+ssl._create_default_https_context = ssl._create_unverified_context
 # router = APIRouter()
 
 
@@ -78,73 +76,73 @@ def convert_seconds(seconds: int):
     return date.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def download_audio_from_m3u8(url, output_path):
-    # Fetch the HLS playlist
-    playlist = m3u8.load(url)
-
-    # Find the audio stream in the playlist
-    audio_uri = None
-    for playlist_entry in playlist.segments:
-        if playlist_entry.uri.endswith('.ts'):  # Adjust this condition based on your playlist structure
-            audio_uri = playlist_entry.uri
-            break
-
-    if audio_uri:
-        # Download the audio segment
-        audio_url = f"{url.rsplit('/', 1)[0]}/{audio_uri}"  # Construct absolute URL
-        audio_data = requests.get(audio_url).content
-
-        # Save the audio data to a WAV file
-        with open(output_path, 'wb') as file:
-            file.write(audio_data)
-
-        print(f"Audio downloaded and saved to {output_path}")
-    else:
-        print("Audio segment not found in the playlist")
-
-
-@app.get('/')
-def index():
-    return {"message": "recroots ai-models"}
+# def download_audio_from_m3u8(url, output_path):
+#     # Fetch the HLS playlist
+#     playlist = m3u8.load(url)
+#
+#     # Find the audio stream in the playlist
+#     audio_uri = None
+#     for playlist_entry in playlist.segments:
+#         if playlist_entry.uri.endswith('.ts'):  # Adjust this condition based on your playlist structure
+#             audio_uri = playlist_entry.uri
+#             break
+#
+#     if audio_uri:
+#         # Download the audio segment
+#         audio_url = f"{url.rsplit('/', 1)[0]}/{audio_uri}"  # Construct absolute URL
+#         audio_data = requests.get(audio_url).content
+#
+#         # Save the audio data to a WAV file
+#         with open(output_path, 'wb') as file:
+#             file.write(audio_data)
+#
+#         print(f"Audio downloaded and saved to {output_path}")
+#     else:
+#         print("Audio segment not found in the playlist")
 
 
-@app.post("/get-score")
-async def get_score(questions: Questions, response: Response):
+# @app.get('/')
+# def index():
+#     return {"message": "recroots ai-models"}
+
+
+@app.get("/")
+def get_score(response: Response):
     try:
-        download_audio_from_m3u8(questions.link,f'{questions.identification}.WAV')
-        # subprocess.run(['/usr/bin/ffmpeg', '-i', questions.link, '-b:a', '64k', f'{questions.identification}.WAV'])
+        # download_audio_from_m3u8(questions.link,f'{questions.identification}.WAV')
+        subprocess.run(['/ffmpeg', '-i', 'https://d8cele0fjkppb.cloudfront.net/ivs/v1/624618927537/y16bDr6BzuhG/2023/12/14/11/3/0lm3JnI0dvgo/media/hls/master.m3u8', '-b:a', '64k', '657ae0c1ec9a6e346d803190.WAV'])
         new_result = []
         index = 0
-        for question in questions.questions:
-            if question.answer:
-                if index > 0:
-                    start_time = question.start_time - questions.questions[0].start_time
-                    end_time = start_time + (question.end_time - question.start_time)
-                else:
-                    start_time = 0
-                    end_time = question.end_time - question.start_time
-
-                print(start_time, 'start_time', end_time, 'end_time')
-                get_audio(start_time, end_time, question.identity, questions.identification)
-                audio_text = get_text(f"{question.identity}.mp3")
-                result = check_text(question.answer, audio_text, question.question)
-                new_question = Question(question.answer, question.start_time, question.end_time)
-                new_question.expected = question.answer
-                new_question.given = audio_text
-                new_question.result = result
-                new_result.append(new_question)
-                index = index + 1
-            else:
-                response.status_code = 400
-                return {"message": "no data found"}
-            # os.remove(f'{questions.identification}.WAV')
-        return {"message": new_result}
+        # for question in questions.questions:
+        #     if question.answer:
+        #         if index > 0:
+        #             start_time = question.start_time - questions.questions[0].start_time
+        #             end_time = start_time + (question.end_time - question.start_time)
+        #         else:
+        #             start_time = 0
+        #             end_time = question.end_time - question.start_time
+        #
+        #         print(start_time, 'start_time', end_time, 'end_time')
+        #         get_audio(start_time, end_time, question.identity, questions.identification)
+        #         audio_text = get_text(f"{question.identity}.mp3")
+        #         result = check_text(question.answer, audio_text, question.question)
+        #         new_question = Question(question.answer, question.start_time, question.end_time)
+        #         new_question.expected = question.answer
+        #         new_question.given = audio_text
+        #         new_question.result = result
+        #         new_result.append(new_question)
+        #         index = index + 1
+        #     else:
+        #         response.status_code = 400
+        #         return {"message": "no data found"}
+        #     # os.remove(f'{questions.identification}.WAV')
+        return {"message": "new_result"}
     # Return the list of new questions with results
 
     except Exception as e:
         print(e)
         response.status_code = 500
-        return {"message": "something went wrong"}
+        return {"message": e}
 
 
 # if __name__ == "__main__":
