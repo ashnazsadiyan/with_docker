@@ -1,14 +1,14 @@
 from fastapi import FastAPI, Response
 from mangum import Mangum
-import uvicorn
+# import uvicorn
 import ssl
 import subprocess
 from typing import List  # Import List type for questions
-from pydantic import BaseModel
-import whisper
-from sentence_transformers import SentenceTransformer, util
+# from pydantic import BaseModel
+# import whisper
+# from sentence_transformers import SentenceTransformer, util
 from datetime import datetime
-from pydub import AudioSegment
+# from pydub import AudioSegment
 import os
 
 # import os
