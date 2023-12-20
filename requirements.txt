@@ -1,4 +1,4 @@
 fastapi~=0.105.0
 mangum~=0.17.0
 uvicorn
-
+pydub
