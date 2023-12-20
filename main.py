@@ -21,52 +21,52 @@ ssl._create_default_https_context = ssl._create_unverified_context
 # router = APIRouter()
 
 
-class Question:
-    def __init__(self, answer: str, start_time: float, end_time: float):
-        self.answer = answer
-        self.start_time = start_time
-        self.end_time = end_time
-        self.expected = ""
-        self.given = ""
-        self.result = 0
-
-
-class QuestionsAnswers(BaseModel):
-    answer: str
-    start_time: int
-    end_time: int
-    question: str
-    identity: str
-
-
-class Questions(BaseModel):
-    link: str
-    questions: List[QuestionsAnswers]
-    identification: str
+# class Question:
+#     def __init__(self, answer: str, start_time: float, end_time: float):
+#         self.answer = answer
+#         self.start_time = start_time
+#         self.end_time = end_time
+#         self.expected = ""
+#         self.given = ""
+#         self.result = 0
+#
+#
+# class QuestionsAnswers(BaseModel):
+#     answer: str
+#     start_time: int
+#     end_time: int
+#     question: str
+#     identity: str
+#
+#
+# class Questions(BaseModel):
+#     link: str
+#     questions: List[QuestionsAnswers]
+#     identification: str
 
 # zs
-def get_audio(start_time: float, end_time: float, _id: str, identification: str):
-    audio = AudioSegment.from_file(f'{identification}.WAV')
-    audio_segment = audio[start_time:end_time]
-    extracted_file = f"{_id}.mp3"
-    audio_segment.export(extracted_file, format='mp3')
+# def get_audio(start_time: float, end_time: float, _id: str, identification: str):
+#     audio = AudioSegment.from_file(f'{identification}.WAV')
+#     audio_segment = audio[start_time:end_time]
+#     extracted_file = f"{_id}.mp3"
+#     audio_segment.export(extracted_file, format='mp3')
 
 
-def get_text(file_name: str):
-    model = whisper.load_model("base")
-    result = model.transcribe(file_name, fp16=False)
-    os.remove(file_name)
-    return result["text"]
+# def get_text(file_name: str):
+#     model = whisper.load_model("base")
+#     result = model.transcribe(file_name, fp16=False)
+#     os.remove(file_name)
+#     return result["text"]
 
 
-def check_text(expected_answer: str, given_answer: str, question: str):
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    embeddings = model.encode([expected_answer, given_answer], convert_to_tensor=True)
-    cosine_score = util.pytorch_cos_sim(embeddings[0], embeddings[1])
-    similarity_score = cosine_score.item()
-
-    print(f"Similarity Score for question {question}: {similarity_score}")
-    return similarity_score
+# def check_text(expected_answer: str, given_answer: str, question: str):
+#     model = SentenceTransformer('all-MiniLM-L6-v2')
+#     embeddings = model.encode([expected_answer, given_answer], convert_to_tensor=True)
+#     cosine_score = util.pytorch_cos_sim(embeddings[0], embeddings[1])
+#     similarity_score = cosine_score.item()
+#
+#     print(f"Similarity Score for question {question}: {similarity_score}")
+#     return similarity_score
 
 
 def convert_seconds(seconds: int):
