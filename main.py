@@ -14,6 +14,7 @@ import boto3
 
 # import os
 
+AudioSegment.converter = '/usr/share/ffmpeg'
 
 app = FastAPI()
 handler = Mangum(app)
@@ -48,7 +49,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 #     identification: str
 
 # zs
-# def get_audio(start_time: float, end_time: float, _id: str, identification: str):
+# def get_audio(start_time: float, end_time: float, _id: str, identification: str, ):
 #     audio = AudioSegment.from_file(f'/tmp/{identification}.WAV')
 #     audio_segment = audio[start_time:end_time]
 #     extracted_file = f"/tmp/{_id}.mp3"
@@ -72,13 +73,6 @@ ssl._create_default_https_context = ssl._create_unverified_context
 #     return similarity_score
 
 
-def convert_seconds(seconds: int):
-    timestamp_sec = seconds / 1000  # Convert milliseconds to seconds
-    date = datetime.fromtimestamp(timestamp_sec)
-    print(date.strftime("%Y-%m-%d %H:%M:%S"))
-    return date.strftime("%Y-%m-%d %H:%M:%S")
-
-
 def save_to_s3(bucket_name, object_key, content):
     # AWS credentials setup (make sure you handle credentials securely)
     aws_access_key = 'AKIAZC3RQOWY2DXBO72Q'
@@ -91,16 +85,13 @@ def save_to_s3(bucket_name, object_key, content):
     s3.put_object(Bucket=bucket_name, Key=object_key, Body=content)
 
 
-AudioSegment.converter = '/usr/share/ffmpeg'
-
-
 @app.get("/")
 def get_score(response: Response):
     try:
         command = [
             '/usr/share/ffmpeg',
             '-i',
-            'https://d8cele0fjkppb.cloudfront.net/ivs/v1/624618927537/y16bDr6BzuhG/2023/12/14/11/3/0lm3JnI0dvgo/media/hls/master.m3u8',
+            'https://d8cele0fjkppb.cloudfront.net/ivs/v1/624618927537/y16bDr6BzuhG/2023/12/6/10/49/4JCWi1cxMwWo/media/hls/master.m3u8',
             '-b:a', '64k',
             '-f', 'wav',  # Force output format to WAV
             'pipe:1'  # Send output to stdout
@@ -117,7 +108,15 @@ def get_score(response: Response):
 
             # Save the output to S3
             save_to_s3(bucket_name, object_key, stdout)
+
+            audio = AudioSegment.from_file(stdout)
+            audio_segment = audio[0:45000]
+            extracted_file = "/tmp/65705149865c63b649cef112.mp3"
+            audio_segment.export(extracted_file, format='mp3')
             print(f"File uploaded to S3 bucket: {bucket_name}/{object_key}")
+            exist=os.path.exists("/tmp/65705149865c63b649cef112.mp3")
+            return {"has":exist}
+
         else:
             print(f"FFmpeg command failed with error: {stderr.decode('utf-8')}")
 
@@ -127,9 +126,20 @@ def get_score(response: Response):
 # @app.get("/")
 # def get_score(response: Response):
 #     try:
-#         print(os.path.exists('/usr/share/ffmpeg'),'file exist')
-#         # download_audio_from_m3u8(questions.link,f'{questions.identification}.WAV')
-#         subprocess.run(['/usr/share/ffmpeg', '-i', 'https://d8cele0fjkppb.cloudfront.net/ivs/v1/624618927537/y16bDr6BzuhG/2023/12/14/11/3/0lm3JnI0dvgo/media/hls/master.m3u8','-b:a','64k','/usr/share/657ae0c1ec9a6e346d80318f.WAV'])
+#         command = [
+#             '/usr/share/ffmpeg',
+#             '-i',
+#             'https://d8cele0fjkppb.cloudfront.net/ivs/v1/624618927537/y16bDr6BzuhG/2023/12/14/11/3/0lm3JnI0dvgo/media/hls/master.m3u8',
+#             '-b:a', '64k',
+#             '-f', 'wav',  # Force output format to WAV
+#             'pipe:1'  # Send output to stdout
+#         ]
+#
+#         # Run FFmpeg command and capture the output
+#         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#         stdout, stderr = process.communicate()
+#
+#         # subprocess.run(['/usr/share/ffmpeg', '-i', 'https://d8cele0fjkppb.cloudfront.net/ivs/v1/624618927537/y16bDr6BzuhG/2023/12/14/11/3/0lm3JnI0dvgo/media/hls/master.m3u8','-b:a','64k','/usr/share/657ae0c1ec9a6e346d80318f.WAV'])
 #         new_result = []
 #         index = 0
 #         # for question in questions.questions:
@@ -142,7 +152,7 @@ def get_score(response: Response):
 #         #             end_time = question.end_time - question.start_time
 #         #
 #         #         print(start_time, 'start_time', end_time, 'end_time')
-#         # get_audio(1702551805057, 168136, '657ae0c1ec9a6e346d803190', '657ae0c1ec9a6e346d80318f')
+#         get_audio(1702551805057, 168136, '657ae0c1ec9a6e346d803190', '657ae0c1ec9a6e346d80318f')
 #         # audio_text = get_text("/tmp/657ae0c1ec9a6e346d803190.mp3")
 #         #         result = check_text(question.answer, audio_text, question.question)
 #         #         new_question = Question(question.answer, question.start_time, question.end_time)
@@ -157,7 +167,7 @@ def get_score(response: Response):
 #         #     # os.remove(f'{questions.identification}.WAV')
 #         # print(os.path.exists('/tmp/657ae0c1ec9a6e346d80318f.WAV'),'file exist')
 #         return {"message": 'audio_text'}
-#     # Return the list of new questions with results
+# Return the list of new questions with results
 #
 #     except Exception as e:
 #         print(e)
