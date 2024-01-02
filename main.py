@@ -88,6 +88,7 @@ def save_to_s3(bucket_name, object_key, content):
 @app.get("/")
 def get_score(response: Response):
     try:
+
         command = [
             '/usr/share/ffmpeg',
             '-i',

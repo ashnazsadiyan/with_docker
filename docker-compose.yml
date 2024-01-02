@@ -1,8 +1,0 @@
-version: '1'
-
-services:
-  python:
-    build: .
-    volumes:
-      - './src:/lambda-function/src'
-    tty: true
