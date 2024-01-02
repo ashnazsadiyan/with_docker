@@ -19,6 +19,8 @@ app = FastAPI()
 handler = Mangum(app)
 
 ssl._create_default_https_context = ssl._create_unverified_context
+
+
 # router = APIRouter()
 
 
@@ -87,6 +89,9 @@ def save_to_s3(bucket_name, object_key, content):
 
     # Upload content to S3
     s3.put_object(Bucket=bucket_name, Key=object_key, Body=content)
+
+
+AudioSegment.converter = '/usr/share/ffmpeg'
 
 
 @app.get("/")
